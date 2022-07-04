@@ -1,25 +1,73 @@
-import logo from './logo.svg';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import Axios from 'axios';
 
-export default App;
+export default class App extends React.Component{
+  constructor(props){
+    super(props);
+
+    this.state = {
+      error: null,
+      isLoaded: false,
+      users: {},      
+    };
+
+    //this.handleChange = this.handleChange.bind(this);
+  }
+
+  componentDidMount(){
+    Axios.get('http://127.0.0.1:8000/users').then(
+      (response) => {
+        this.setState({          
+          users: response,
+          isLoaded: true,
+        },
+        
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        });
+      }
+    );
+  }
+
+  render(){
+    const error =  this.state.error;
+    const isLoaded = this.state.isLoaded;
+    const users =  this.state.users.data;    
+
+    // if(isLoaded){
+    //   console.log(users[0]);
+    // }   
+
+    if (isLoaded) {
+      return(
+        <div>
+        <form id="create-user" action="http://127.0.0.1:8000/users/create" method="post">
+          <label>
+            Name:
+            <input type="text" name="name" />
+          </label>
+          <input type="submit" value="Submit" />
+        </form> 
+        <div>
+          <ul>
+            {
+              users.map(user => (
+              <li key={user.id}>
+                {user.name}: {user.email}
+              </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+      );
+    }
+  }
+}
